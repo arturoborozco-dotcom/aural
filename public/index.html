@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu compañero</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f4f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+#app {
+  width: 100%;
+  max-width: 480px;
+  height: 90vh;
+  max-height: 720px;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e8e6e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#header {
+  padding: 14px 18px 0;
+  border-bottom: 1px solid #f0ede8;
+}
+
+#header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: #e1f5ee;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+#name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+#mode-label { font-size: 12px; color: #1D9E75; margin-top: 1px; }
+
+#tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #888;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.tab:hover { color: #333; }
+.tab.active { color: #0F6E56; border-bottom-color: #1D9E75; font-weight: 600; }
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 18px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+
+.msg { display: flex; max-width: 84%; }
+.msg.user { align-self: flex-end; }
+.msg.ai { align-self: flex-start; }
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.msg.user .bubble {
+  background: #f0ede8;
+  color: #1a1a1a;
+  border-bottom-right-radius: 4px;
+}
+.msg.ai .bubble {
+  background: #e1f5ee;
+  color: #085041;
+  border-bottom-left-radius: 4px;
+}
+
+.typing {
+  align-self: flex-start;
+  background: #e1f5ee;
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #1D9E75;
+  animation: blink 1.3s infinite ease-in-out;
+}
+.dot:nth-child(2) { animation-delay: 0.18s; }
+.dot:nth-child(3) { animation-delay: 0.36s; }
+@keyframes blink { 0%,60%,100%{opacity:.2;transform:scale(.8)} 30%{opacity:1;transform:scale(1)} }
+
+#input-row {
+  padding: 10px 14px 14px;
+  border-top: 1px solid #f0ede8;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+#txt {
+  flex: 1;
+  border: 1px solid #e0ddd8;
+  border-radius: 20px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  background: #faf9f7;
+  color: #1a1a1a;
+  outline: none;
+  line-height: 1.5;
+  max-height: 100px;
+  overflow-y: auto;
+}
+#txt:focus { border-color: #1D9E75; }
+#txt::placeholder { color: #bbb; }
+
+#send {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #1D9E75;
+  border: none;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+#send:hover { background: #0F6E56; }
+#send:disabled { background: #d0cdc8; cursor: default; }
+
+.send-icon { width: 15px; height: 15px; fill: white; }
+
+#empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 13px;
+  text-align: center;
+  padding: 20px;
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="header-top">
+      <div class="avatar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3C9 3 6 5.5 6 9v3c0 1.7-1.3 3-3 3v1h3.5c.8 1.8 2.6 3 4.5 3s3.7-1.2 4.5-3H18v-1c-1.7 0-3-1.3-3-3V9c0-3.5-3-6-3-6z" fill="#1D9E75" opacity=".85"/>
+          <circle cx="9.5" cy="9.5" r=".9" fill="#085041"/>
+          <circle cx="14.5" cy="9.5" r=".9" fill="#085041"/>
+        </svg>
+      </div>
+      <div>
+        <div id="name">Tu compañero</div>
+        <div id="mode-label">elige un modo para empezar</div>
+      </div>
+    </div>
+    <div id="tabs">
+      <button class="tab" data-mode="manana">Mañana</button>
+      <button class="tab" data-mode="estres">Estrés</button>
+      <button class="tab" data-mode="habitos">Hábitos</button>
+      <button class="tab" data-mode="foco">Foco</button>
+      <button class="tab" data-mode="cierre">Cierre</button>
+      <button class="tab" data-mode="libre">Libre</button>
+    </div>
+  </div>
+
+  <div id="empty-state">Selecciona un modo<br>para comenzar</div>
+  <div id="messages" style="display:none"></div>
+
+  <div id="input-row">
+    <textarea id="txt" rows="1" placeholder="Escribe..." disabled></textarea>
+    <button id="send" disabled>
+      <svg class="send-icon" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const MODES = {
+  manana: {
+    label: "Inicio del día",
+    system: `Eres el compañero personal de Baruch. Es de mañana. Tu rol es ayudarle a arrancar el día con claridad y calma.
+
+Baruch es emprendedor, trabaja en tecnología y finanzas. Está construyendo Aural, una app de acompañamiento emocional. Tiene ambición e inteligencia, pero a veces la ansiedad de sentir que el tiempo pasa sin avanzar lo pesa.
+
+En este modo:
+- Pregunta cómo amaneció, sin forzar positivismo
+- Ayúdale a identificar UNA o dos intenciones para el día
+- Si hay algo que lo tiene pesado, escucha primero
+- Puedes tocar bienestar, espiritualidad, hábitos, el proyecto, finanzas — lo que él traiga
+- Sé breve. Cálido. Sin sermones. Habla de tú.`,
+    greeting: "Buenos días, Baruch. ¿Cómo amaneciste hoy — de verdad?"
+  },
+  estres: {
+    label: "Momento difícil",
+    system: `Eres el compañero personal de Baruch. Está pasando por un momento de estrés o tensión.
+
+Baruch es emprendedor que trabaja en tecnología y finanzas. Construye Aural y carga con la presión de querer avanzar.
+
+En este modo:
+- Primero escucha. No resuelvas de inmediato.
+- Valida lo que siente sin minimizarlo ni exagerarlo
+- No ofrezcas estrategias hasta que las pida
+- Sé una presencia calmante
+- Habla de tú. Frases cortas. Nada de autoayuda genérica.`,
+    greeting: "Aquí estoy. ¿Qué está pasando?"
+  },
+  habitos: {
+    label: "Hábitos y rutinas",
+    system: `Eres el compañero personal de Baruch. Está revisando sus hábitos y rutinas.
+
+Baruch quiere construir una vida más intencional: salud, mindfulness, finanzas personales, espiritualidad, y progreso en Aural.
+
+En este modo:
+- Pregunta sin juzgar cómo va con lo que le importa
+- Ayúdale a notar patrones con curiosidad, no con crítica
+- Si algo no funcionó, explora el por qué
+- Si algo sí funcionó, reconócelo con simplicidad
+- Sugiere ajustes pequeños y concretos si los pide
+- Habla de tú. Honesto pero amable.`,
+    greeting: "Cuéntame cómo van las cosas. ¿Qué hábito o rutina quieres revisar hoy?"
+  },
+  foco: {
+    label: "Foco y trabajo",
+    system: `Eres el compañero personal de Baruch. Está en modo trabajo — necesita claridad o desatorarse de algo.
+
+Baruch trabaja en tecnología, finanzas, y construye Aural. Es capaz y tiene visión, pero a veces la ambigüedad lo paraliza.
+
+En este modo:
+- Ayúdale a clarificar qué es lo más importante ahora
+- Piensa con él sobre problemas técnicos, de negocio, o estrategia
+- Ayúdale a tomar decisiones pendientes
+- Sé directo. Aquí más pensamiento claro que tacto emocional.
+- Habla de tú. Ve al grano.`,
+    greeting: "Listo. ¿En qué estás atorado o qué necesitas clarificar?"
+  },
+  cierre: {
+    label: "Cierre del día",
+    system: `Eres el compañero personal de Baruch. Es fin del día.
+
+Baruch piensa mucho, construye mucho, y a veces no se da permiso de descansar.
+
+En este modo:
+- Pregunta cómo fue el día, sin prisa
+- Ayúdale a reconocer algo bueno, aunque el día haya sido difícil
+- Si hay algo sin resolver, ayúdale a dejarlo con paz
+- No generes más tareas — es momento de soltar
+- Termina siempre con presencia, no con consejo
+- Habla de tú. Suave.`,
+    greeting: "El día está cerrando. ¿Cómo te fue, Baruch?"
+  },
+  libre: {
+    label: "Conversación libre",
+    system: `Eres el compañero personal de Baruch. Conversación abierta.
+
+Baruch es emprendedor en tecnología y finanzas. Construye Aural. Tiene curiosidad amplia: tecnología, espiritualidad, finanzas personales, desarrollo personal, bienestar.
+
+En este modo eres coach, caja de resonancia, compañero, experto, o presencia — según lo que Baruch necesite en el momento.
+
+Siempre: habla de tú, sé breve cuando el momento lo pide, profundo cuando él lo busca.`,
+    greeting: "Cuéntame. ¿Por dónde empezamos hoy?"
+  }
+};
+
+let mode = null;
+let history = [];
+let loading = false;
+
+const msgsEl = document.getElementById('messages');
+const emptyEl = document.getElementById('empty-state');
+const txtEl = document.getElementById('txt');
+const sendEl = document.getElementById('send');
+const modeLabelEl = document.getElementById('mode-label');
+
+function addMsg(role, text) {
+  const d = document.createElement('div');
+  d.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  b.textContent = text;
+  d.appendChild(b);
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+function showTyping() {
+  const d = document.createElement('div');
+  d.className = 'typing'; d.id = 'typing';
+  d.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const m = tab.dataset.mode;
+    if (m === mode) return;
+    mode = m;
+    history = [];
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    modeLabelEl.textContent = MODES[m].label;
+    msgsEl.innerHTML = '';
+    emptyEl.style.display = 'none';
+    msgsEl.style.display = 'flex';
+    const g = MODES[m].greeting;
+    addMsg('ai', g);
+    history.push({ role: 'assistant', content: g });
+    txtEl.disabled = false;
+    sendEl.disabled = false;
+    txtEl.focus();
+  });
+});
+
+async function send() {
+  const text = txtEl.value.trim();
+  if (!text || loading || !mode) return;
+  txtEl.value = '';
+  txtEl.style.height = 'auto';
+  loading = true;
+  sendEl.disabled = true;
+
+  addMsg('user', text);
+  history.push({ role: 'user', content: text });
+  showTyping();
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history, system: MODES[mode].system })
+    });
+    const data = await res.json();
+    hideTyping();
+    const reply = data.content?.[0]?.text || 'Aquí estoy.';
+    history.push({ role: 'assistant', content: reply });
+    addMsg('ai', reply);
+  } catch(e) {
+    hideTyping();
+    addMsg('ai', 'Algo no cargó. Pero sigo aquí.');
+  }
+
+  loading = false;
+  sendEl.disabled = false;
+  txtEl.focus();
+}
+
+sendEl.addEventListener('click', send);
+txtEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+});
+txtEl.addEventListener('input', () => {
+  txtEl.style.height = 'auto';
+  txtEl.style.height = Math.min(txtEl.scrollHeight, 100) + 'px';
+});
+</script>
+</body>
+</html>
