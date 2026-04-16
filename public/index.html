@@ -6,313 +6,389 @@
 <title>Tu compañero</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; }
+#app { width: 100%; max-width: 480px; height: 90vh; max-height: 720px; background: #fff; border-radius: 20px; border: 1px solid #e8e6e0; display: flex; flex-direction: column; overflow: hidden; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f5f4f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 16px;
-}
+/* ONBOARDING */
+#onboarding { flex: 1; display: flex; flex-direction: column; padding: 32px 24px 24px; }
+.ob-progress { display: flex; gap: 6px; margin-bottom: 32px; }
+.ob-dot { flex: 1; height: 3px; border-radius: 2px; background: #e8e6e0; transition: background 0.3s; }
+.ob-dot.done { background: #1D9E75; }
+.ob-dot.active { background: #1D9E75; opacity: 0.5; }
+.ob-icon { font-size: 32px; margin-bottom: 12px; }
+.ob-title { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; line-height: 1.3; }
+.ob-sub { font-size: 14px; color: #888; margin-bottom: 28px; line-height: 1.5; }
+.ob-options { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.ob-opt { padding: 14px 16px; border: 1.5px solid #e8e6e0; border-radius: 14px; font-size: 14px; color: #1a1a1a; background: #fff; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; line-height: 1.4; }
+.ob-opt:hover { border-color: #1D9E75; background: #f0faf5; }
+.ob-opt.selected { border-color: #1D9E75; background: #e1f5ee; color: #085041; }
+.ob-opt.multi { position: relative; }
+.ob-input { width: 100%; padding: 14px 16px; border: 1.5px solid #e8e6e0; border-radius: 14px; font-size: 14px; font-family: inherit; outline: none; color: #1a1a1a; resize: none; }
+.ob-input:focus { border-color: #1D9E75; }
+.ob-next { margin-top: 20px; padding: 14px; background: #1D9E75; color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s; }
+.ob-next:hover { background: #0F6E56; }
+.ob-next:disabled { background: #d0cdc8; cursor: default; }
+.ob-skip { margin-top: 10px; padding: 10px; background: none; border: none; color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer; }
 
-#app {
-  width: 100%;
-  max-width: 480px;
-  height: 90vh;
-  max-height: 720px;
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid #e8e6e0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-#header {
-  padding: 14px 18px 0;
-  border-bottom: 1px solid #f0ede8;
-}
-
-#header-top {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.avatar {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: #e1f5ee;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-
-#name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-#mode-label { font-size: 12px; color: #1D9E75; margin-top: 1px; }
-
-#tabs {
-  display: flex;
-  gap: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
+/* CHAT */
+#chat { flex: 1; display: none; flex-direction: column; }
+#header { padding: 14px 18px 0; border-bottom: 1px solid #f0ede8; }
+#header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: #e1f5ee; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+#hname { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+#hmode { font-size: 12px; color: #1D9E75; margin-top: 1px; }
+#tabs { display: flex; overflow-x: auto; scrollbar-width: none; }
 #tabs::-webkit-scrollbar { display: none; }
-
-.tab {
-  padding: 8px 14px;
-  font-size: 12px;
-  color: #888;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  white-space: nowrap;
-  font-family: inherit;
-  transition: color 0.15s;
-}
+.tab { padding: 8px 14px; font-size: 12px; color: #888; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; font-family: inherit; transition: color 0.15s; }
 .tab:hover { color: #333; }
 .tab.active { color: #0F6E56; border-bottom-color: #1D9E75; font-weight: 600; }
-
-#messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 18px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  scroll-behavior: smooth;
-}
-
+#messages { flex: 1; overflow-y: auto; padding: 18px 18px 8px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
 .msg { display: flex; max-width: 84%; }
 .msg.user { align-self: flex-end; }
 .msg.ai { align-self: flex-start; }
-
-.bubble {
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.65;
-}
-.msg.user .bubble {
-  background: #f0ede8;
-  color: #1a1a1a;
-  border-bottom-right-radius: 4px;
-}
-.msg.ai .bubble {
-  background: #e1f5ee;
-  color: #085041;
-  border-bottom-left-radius: 4px;
-}
-
-.typing {
-  align-self: flex-start;
-  background: #e1f5ee;
-  border-radius: 16px;
-  border-bottom-left-radius: 4px;
-  padding: 12px 14px;
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-.dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: #1D9E75;
-  animation: blink 1.3s infinite ease-in-out;
-}
+.bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.65; }
+.msg.user .bubble { background: #f0ede8; color: #1a1a1a; border-bottom-right-radius: 4px; }
+.msg.ai .bubble { background: #e1f5ee; color: #085041; border-bottom-left-radius: 4px; }
+.typing { align-self: flex-start; background: #e1f5ee; border-radius: 16px; border-bottom-left-radius: 4px; padding: 12px 14px; display: flex; gap: 4px; align-items: center; }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: blink 1.3s infinite ease-in-out; }
 .dot:nth-child(2) { animation-delay: 0.18s; }
 .dot:nth-child(3) { animation-delay: 0.36s; }
 @keyframes blink { 0%,60%,100%{opacity:.2;transform:scale(.8)} 30%{opacity:1;transform:scale(1)} }
-
-#input-row {
-  padding: 10px 14px 14px;
-  border-top: 1px solid #f0ede8;
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-#txt {
-  flex: 1;
-  border: 1px solid #e0ddd8;
-  border-radius: 20px;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: none;
-  background: #faf9f7;
-  color: #1a1a1a;
-  outline: none;
-  line-height: 1.5;
-  max-height: 100px;
-  overflow-y: auto;
-}
+#input-row { padding: 10px 14px 14px; border-top: 1px solid #f0ede8; display: flex; gap: 8px; align-items: flex-end; }
+#txt { flex: 1; border: 1px solid #e0ddd8; border-radius: 20px; padding: 10px 14px; font-size: 14px; font-family: inherit; resize: none; background: #faf9f7; color: #1a1a1a; outline: none; line-height: 1.5; max-height: 100px; overflow-y: auto; }
 #txt:focus { border-color: #1D9E75; }
 #txt::placeholder { color: #bbb; }
-
-#send {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: #1D9E75;
-  border: none;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
+#send { width: 36px; height: 36px; border-radius: 50%; background: #1D9E75; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
 #send:hover { background: #0F6E56; }
 #send:disabled { background: #d0cdc8; cursor: default; }
-
-.send-icon { width: 15px; height: 15px; fill: white; }
-
-#empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ccc;
-  font-size: 13px;
-  text-align: center;
-  padding: 20px;
-  line-height: 1.7;
-}
+#empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 13px; text-align: center; padding: 20px; line-height: 1.7; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div id="header">
-    <div id="header-top">
-      <div class="avatar">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M12 3C9 3 6 5.5 6 9v3c0 1.7-1.3 3-3 3v1h3.5c.8 1.8 2.6 3 4.5 3s3.7-1.2 4.5-3H18v-1c-1.7 0-3-1.3-3-3V9c0-3.5-3-6-3-6z" fill="#1D9E75" opacity=".85"/>
-          <circle cx="9.5" cy="9.5" r=".9" fill="#085041"/>
-          <circle cx="14.5" cy="9.5" r=".9" fill="#085041"/>
-        </svg>
+  <div id="onboarding"></div>
+  <div id="chat">
+    <div id="header">
+      <div id="header-top">
+        <div class="avatar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C9 3 6 5.5 6 9v3c0 1.7-1.3 3-3 3v1h3.5c.8 1.8 2.6 3 4.5 3s3.7-1.2 4.5-3H18v-1c-1.7 0-3-1.3-3-3V9c0-3.5-3-6-3-6z" fill="#1D9E75" opacity=".85"/>
+            <circle cx="9.5" cy="9.5" r=".9" fill="#085041"/>
+            <circle cx="14.5" cy="9.5" r=".9" fill="#085041"/>
+          </svg>
+        </div>
+        <div>
+          <div id="hname">Tu compañero</div>
+          <div id="hmode">elige un modo</div>
+        </div>
       </div>
-      <div>
-        <div id="name">Tu compañero</div>
-        <div id="mode-label">elige un modo para empezar</div>
+      <div id="tabs">
+        <button class="tab" data-mode="manana">Mañana</button>
+        <button class="tab" data-mode="estres">Estrés</button>
+        <button class="tab" data-mode="habitos">Hábitos</button>
+        <button class="tab" data-mode="foco">Foco</button>
+        <button class="tab" data-mode="cierre">Cierre</button>
+        <button class="tab" data-mode="libre">Libre</button>
       </div>
     </div>
-    <div id="tabs">
-      <button class="tab" data-mode="manana">Mañana</button>
-      <button class="tab" data-mode="estres">Estrés</button>
-      <button class="tab" data-mode="habitos">Hábitos</button>
-      <button class="tab" data-mode="foco">Foco</button>
-      <button class="tab" data-mode="cierre">Cierre</button>
-      <button class="tab" data-mode="libre">Libre</button>
+    <div id="empty-state">Selecciona un modo para comenzar</div>
+    <div id="messages" style="display:none"></div>
+    <div id="input-row">
+      <textarea id="txt" rows="1" placeholder="Escribe..." disabled></textarea>
+      <button id="send" disabled>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
     </div>
-  </div>
-
-  <div id="empty-state">Selecciona un modo<br>para comenzar</div>
-  <div id="messages" style="display:none"></div>
-
-  <div id="input-row">
-    <textarea id="txt" rows="1" placeholder="Escribe..." disabled></textarea>
-    <button id="send" disabled>
-      <svg class="send-icon" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-    </button>
   </div>
 </div>
 
 <script>
+const STEPS = [
+  {
+    icon: '👋',
+    title: '¿Cómo te llamas?',
+    sub: 'Para que tu compañero pueda llamarte por tu nombre.',
+    type: 'text',
+    placeholder: 'Tu nombre...',
+    key: 'nombre'
+  },
+  {
+    icon: '🧭',
+    title: '¿En qué momento de vida estás?',
+    sub: 'Elige lo que más resuena ahora mismo.',
+    type: 'single',
+    key: 'momento',
+    opts: [
+      { label: 'Construyendo algo nuevo', val: 'construccion' },
+      { label: 'En transición o cambio', val: 'transicion' },
+      { label: 'Buscando más claridad', val: 'claridad' },
+      { label: 'Quiero crecer pero algo me frena', val: 'bloqueado' }
+    ]
+  },
+  {
+    icon: '🎯',
+    title: '¿Qué quieres trabajar más?',
+    sub: 'Puedes elegir más de uno.',
+    type: 'multi',
+    key: 'areas',
+    opts: [
+      { label: 'Bienestar emocional', val: 'emocional' },
+      { label: 'Hábitos y disciplina', val: 'habitos' },
+      { label: 'Foco y productividad', val: 'foco' },
+      { label: 'Finanzas personales', val: 'finanzas' },
+      { label: 'Espiritualidad', val: 'espiritualidad' },
+      { label: 'Mis proyectos y negocio', val: 'negocio' }
+    ]
+  },
+  {
+    icon: '🧠',
+    title: '¿Cómo procesas mejor las cosas?',
+    sub: 'Así tu compañero se adapta a ti.',
+    type: 'single',
+    key: 'estilo',
+    opts: [
+      { label: 'Necesito hablar para pensar', val: 'verbal' },
+      { label: 'Prefiero analizar antes de hablar', val: 'analitico' },
+      { label: 'Me guía la intuición y lo que siento', val: 'intuitivo' },
+      { label: 'Necesito acción concreta', val: 'practico' }
+    ]
+  },
+  {
+    icon: '⚡',
+    title: '¿Qué te frena más seguido?',
+    sub: 'Sé honesto — nadie más lo verá.',
+    type: 'single',
+    key: 'freno',
+    opts: [
+      { label: 'La ansiedad o el estrés', val: 'ansiedad' },
+      { label: 'No saber por dónde empezar', val: 'paralisis' },
+      { label: 'La falta de constancia', val: 'constancia' },
+      { label: 'El miedo a equivocarme', val: 'miedo' }
+    ]
+  },
+  {
+    icon: '🌱',
+    title: '¿Cómo prefieres que te acompañe?',
+    sub: 'Define el tono de la relación.',
+    type: 'single',
+    key: 'tono',
+    opts: [
+      { label: 'Con calidez y escucha profunda', val: 'calido' },
+      { label: 'Directo y al grano', val: 'directo' },
+      { label: 'Que me rete y me empuje', val: 'retador' },
+      { label: 'Flexible según el momento', val: 'flexible' }
+    ]
+  }
+];
+
 const MODES = {
   manana: {
-    label: "Inicio del día",
-    system: `Eres el compañero personal de Baruch. Es de mañana. Tu rol es ayudarle a arrancar el día con claridad y calma.
-
-Baruch es emprendedor, trabaja en tecnología y finanzas. Está construyendo Aural, una app de acompañamiento emocional. Tiene ambición e inteligencia, pero a veces la ansiedad de sentir que el tiempo pasa sin avanzar lo pesa.
-
-En este modo:
-- Pregunta cómo amaneció, sin forzar positivismo
-- Ayúdale a identificar UNA o dos intenciones para el día
-- Si hay algo que lo tiene pesado, escucha primero
-- Puedes tocar bienestar, espiritualidad, hábitos, el proyecto, finanzas — lo que él traiga
-- Sé breve. Cálido. Sin sermones. Habla de tú.`,
-    greeting: "Buenos días, Baruch. ¿Cómo amaneciste hoy — de verdad?"
+    label: 'Inicio del día',
+    greeting: (n) => `Buenos días, ${n}. ¿Cómo amaneciste hoy — de verdad?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}. Es de mañana.
+Perfil: ${JSON.stringify(p)}
+Momento vital: ${p.momento}. Lo que más quiere trabajar: ${(p.areas||[]).join(', ')}. Estilo: ${p.estilo}. Principal freno: ${p.freno}. Tono preferido: ${p.tono}.
+${p.insights ? `Insights recientes: ${JSON.stringify(p.insights)}` : ''}
+Ayúdale a arrancar el día con claridad. Pregunta cómo amaneció. Ayúdale a identificar UNA o dos intenciones. Sé breve, cálido, sin sermones. Habla de tú.`
   },
   estres: {
-    label: "Momento difícil",
-    system: `Eres el compañero personal de Baruch. Está pasando por un momento de estrés o tensión.
-
-Baruch es emprendedor que trabaja en tecnología y finanzas. Construye Aural y carga con la presión de querer avanzar.
-
-En este modo:
-- Primero escucha. No resuelvas de inmediato.
-- Valida lo que siente sin minimizarlo ni exagerarlo
-- No ofrezcas estrategias hasta que las pida
-- Sé una presencia calmante
-- Habla de tú. Frases cortas. Nada de autoayuda genérica.`,
-    greeting: "Aquí estoy. ¿Qué está pasando?"
+    label: 'Momento difícil',
+    greeting: (n) => `Aquí estoy, ${n}. ¿Qué está pasando?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}. Está en un momento de estrés.
+Perfil: ${JSON.stringify(p)}. Su principal freno es ${p.freno}. Tono: ${p.tono}.
+${p.insights ? `Insights: ${JSON.stringify(p.insights)}` : ''}
+Primero escucha. No resuelvas de inmediato. Valida sin minimizar. Una pregunta que abra perspectiva si es necesario. Habla de tú. Frases cortas.`
   },
   habitos: {
-    label: "Hábitos y rutinas",
-    system: `Eres el compañero personal de Baruch. Está revisando sus hábitos y rutinas.
-
-Baruch quiere construir una vida más intencional: salud, mindfulness, finanzas personales, espiritualidad, y progreso en Aural.
-
-En este modo:
-- Pregunta sin juzgar cómo va con lo que le importa
-- Ayúdale a notar patrones con curiosidad, no con crítica
-- Si algo no funcionó, explora el por qué
-- Si algo sí funcionó, reconócelo con simplicidad
-- Sugiere ajustes pequeños y concretos si los pide
-- Habla de tú. Honesto pero amable.`,
-    greeting: "Cuéntame cómo van las cosas. ¿Qué hábito o rutina quieres revisar hoy?"
+    label: 'Hábitos y rutinas',
+    greeting: (n) => `Cuéntame cómo van las cosas, ${n}. ¿Qué hábito quieres revisar hoy?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}. Revisan hábitos juntos.
+Áreas de interés: ${(p.areas||[]).join(', ')}. Freno: ${p.freno}. Estilo: ${p.estilo}.
+${p.insights ? `Patrones detectados: ${JSON.stringify(p.insights)}` : ''}
+Pregunta sin juzgar. Explora patrones con curiosidad. Sugiere ajustes pequeños si los pide. Honesto pero amable. Habla de tú.`
   },
   foco: {
-    label: "Foco y trabajo",
-    system: `Eres el compañero personal de Baruch. Está en modo trabajo — necesita claridad o desatorarse de algo.
-
-Baruch trabaja en tecnología, finanzas, y construye Aural. Es capaz y tiene visión, pero a veces la ambigüedad lo paraliza.
-
-En este modo:
-- Ayúdale a clarificar qué es lo más importante ahora
-- Piensa con él sobre problemas técnicos, de negocio, o estrategia
-- Ayúdale a tomar decisiones pendientes
-- Sé directo. Aquí más pensamiento claro que tacto emocional.
-- Habla de tú. Ve al grano.`,
-    greeting: "Listo. ¿En qué estás atorado o qué necesitas clarificar?"
+    label: 'Foco y trabajo',
+    greeting: (n) => `Listo, ${n}. ¿En qué estás atorado o qué necesitas clarificar?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}. Modo trabajo.
+Proyectos/áreas: ${(p.areas||[]).join(', ')}. Estilo: ${p.estilo}. Tono: ${p.tono}.
+${p.insights ? `Fortalezas: ${JSON.stringify(p.insights?.fortalezas)}` : ''}
+Ayúdale a clarificar prioridades. Piensa con él. Sé directo. Ve al grano. Habla de tú.`
   },
   cierre: {
-    label: "Cierre del día",
-    system: `Eres el compañero personal de Baruch. Es fin del día.
-
-Baruch piensa mucho, construye mucho, y a veces no se da permiso de descansar.
-
-En este modo:
-- Pregunta cómo fue el día, sin prisa
-- Ayúdale a reconocer algo bueno, aunque el día haya sido difícil
-- Si hay algo sin resolver, ayúdale a dejarlo con paz
-- No generes más tareas — es momento de soltar
-- Termina siempre con presencia, no con consejo
-- Habla de tú. Suave.`,
-    greeting: "El día está cerrando. ¿Cómo te fue, Baruch?"
+    label: 'Cierre del día',
+    greeting: (n) => `El día está cerrando, ${n}. ¿Cómo te fue?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}. Es fin del día.
+Perfil: ${JSON.stringify(p)}.
+${p.insights ? `Áreas de trabajo: ${JSON.stringify(p.insights?.areas_de_trabajo)}` : ''}
+Ayúdale a reconocer algo bueno. A soltar lo que no se resolvió. No generes más tareas. Termina con presencia. Suave. Habla de tú.`
   },
   libre: {
-    label: "Conversación libre",
-    system: `Eres el compañero personal de Baruch. Conversación abierta.
-
-Baruch es emprendedor en tecnología y finanzas. Construye Aural. Tiene curiosidad amplia: tecnología, espiritualidad, finanzas personales, desarrollo personal, bienestar.
-
-En este modo eres coach, caja de resonancia, compañero, experto, o presencia — según lo que Baruch necesite en el momento.
-
-Siempre: habla de tú, sé breve cuando el momento lo pide, profundo cuando él lo busca.`,
-    greeting: "Cuéntame. ¿Por dónde empezamos hoy?"
+    label: 'Conversación libre',
+    greeting: (n) => `Cuéntame, ${n}. ¿Por dónde empezamos hoy?`,
+    system: (p) => `Eres el compañero personal de ${p.nombre}.
+Perfil completo: ${JSON.stringify(p)}.
+${p.insights ? `Lo que sabes de él: ${JSON.stringify(p.insights)}` : ''}
+Sé coach, caja de resonancia, compañero o experto según lo que necesite. Habla de tú, breve cuando el momento lo pide, profundo cuando él lo busca.`
   }
 };
 
-let mode = null;
+let userId = localStorage.getItem('companion_uid');
+if (!userId) {
+  userId = 'u_' + Math.random().toString(36).slice(2);
+  localStorage.setItem('companion_uid', userId);
+}
+
+let userProfile = {};
+let currentStep = 0;
+let answers = {};
+let multiSelected = [];
+let currentMode = null;
 let history = [];
 let loading = false;
 
+const obEl = document.getElementById('onboarding');
+const chatEl = document.getElementById('chat');
 const msgsEl = document.getElementById('messages');
 const emptyEl = document.getElementById('empty-state');
 const txtEl = document.getElementById('txt');
 const sendEl = document.getElementById('send');
-const modeLabelEl = document.getElementById('mode-label');
+const hmode = document.getElementById('hmode');
+
+async function init() {
+  try {
+    const res = await fetch(`/api/user/${userId}`);
+    const user = await res.json();
+    userProfile = user.profile || {};
+    if (user.onboarded && userProfile.nombre) {
+      showChat();
+    } else {
+      showOnboarding();
+    }
+  } catch(e) {
+    showOnboarding();
+  }
+}
+
+function showOnboarding() {
+  obEl.style.display = 'flex';
+  chatEl.style.display = 'none';
+  renderStep();
+}
+
+function showChat() {
+  obEl.style.display = 'none';
+  chatEl.style.display = 'flex';
+}
+
+function renderStep() {
+  const step = STEPS[currentStep];
+  const total = STEPS.length;
+  multiSelected = [];
+
+  let dotsHTML = STEPS.map((_, i) => {
+    let cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    return `<div class="ob-dot ${cls}"></div>`;
+  }).join('');
+
+  let contentHTML = '';
+  if (step.type === 'text') {
+    contentHTML = `<textarea class="ob-input" id="ob-text" placeholder="${step.placeholder}" rows="2">${answers[step.key] || ''}</textarea>`;
+  } else if (step.type === 'single') {
+    contentHTML = step.opts.map(o => {
+      const sel = answers[step.key] === o.val ? 'selected' : '';
+      return `<button class="ob-opt ${sel}" data-val="${o.val}">${o.label}</button>`;
+    }).join('');
+  } else if (step.type === 'multi') {
+    const prev = answers[step.key] || [];
+    contentHTML = step.opts.map(o => {
+      const sel = prev.includes(o.val) ? 'selected' : '';
+      return `<button class="ob-opt multi ${sel}" data-val="${o.val}">${o.label}</button>`;
+    }).join('');
+    multiSelected = [...prev];
+  }
+
+  obEl.innerHTML = `
+    <div class="ob-progress">${dotsHTML}</div>
+    <div class="ob-icon">${step.icon}</div>
+    <div class="ob-title">${step.title}</div>
+    <div class="ob-sub">${step.sub}</div>
+    <div class="ob-options">${contentHTML}</div>
+    <button class="ob-next" id="ob-next" ${canProceed(step) ? '' : 'disabled'}>
+      ${currentStep === total - 1 ? 'Empezar' : 'Continuar'}
+    </button>
+    ${currentStep > 0 ? '<button class="ob-skip" id="ob-back">← Atrás</button>' : ''}
+  `;
+
+  if (step.type === 'single') {
+    obEl.querySelectorAll('.ob-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        obEl.querySelectorAll('.ob-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        answers[step.key] = btn.dataset.val;
+        document.getElementById('ob-next').disabled = false;
+      });
+    });
+  } else if (step.type === 'multi') {
+    obEl.querySelectorAll('.ob-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('selected');
+        const v = btn.dataset.val;
+        if (multiSelected.includes(v)) {
+          multiSelected = multiSelected.filter(x => x !== v);
+        } else {
+          multiSelected.push(v);
+        }
+        answers[step.key] = [...multiSelected];
+        document.getElementById('ob-next').disabled = multiSelected.length === 0;
+      });
+    });
+  } else if (step.type === 'text') {
+    const ta = document.getElementById('ob-text');
+    ta.addEventListener('input', () => {
+      document.getElementById('ob-next').disabled = ta.value.trim().length < 2;
+    });
+  }
+
+  document.getElementById('ob-next').addEventListener('click', nextStep);
+  const backBtn = document.getElementById('ob-back');
+  if (backBtn) backBtn.addEventListener('click', () => { currentStep--; renderStep(); });
+}
+
+function canProceed(step) {
+  if (step.type === 'text') return (answers[step.key] || '').length >= 2;
+  if (step.type === 'single') return !!answers[step.key];
+  if (step.type === 'multi') return (answers[step.key] || []).length > 0;
+  return false;
+}
+
+async function nextStep() {
+  const step = STEPS[currentStep];
+  if (step.type === 'text') {
+    answers[step.key] = document.getElementById('ob-text').value.trim();
+  }
+  if (currentStep === STEPS.length - 1) {
+    await saveProfile();
+  } else {
+    currentStep++;
+    renderStep();
+  }
+}
+
+async function saveProfile() {
+  try {
+    await fetch(`/api/user/${userId}/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile: answers })
+    });
+    userProfile = answers;
+    showChat();
+  } catch(e) {
+    userProfile = answers;
+    showChat();
+  }
+}
 
 function addMsg(role, text) {
   const d = document.createElement('div');
@@ -338,18 +414,27 @@ function hideTyping() {
 }
 
 document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
+  tab.addEventListener('click', async () => {
     const m = tab.dataset.mode;
-    if (m === mode) return;
-    mode = m;
+    if (m === currentMode) return;
+    currentMode = m;
     history = [];
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
-    modeLabelEl.textContent = MODES[m].label;
+    hmode.textContent = MODES[m].label;
     msgsEl.innerHTML = '';
     emptyEl.style.display = 'none';
     msgsEl.style.display = 'flex';
-    const g = MODES[m].greeting;
+
+    // Refresh profile with latest insights
+    try {
+      const res = await fetch(`/api/user/${userId}`);
+      const user = await res.json();
+      userProfile = { ...answers, ...(user.profile || {}) };
+    } catch(e) {}
+
+    const nombre = userProfile.nombre || 'amigo';
+    const g = MODES[m].greeting(nombre);
     addMsg('ai', g);
     history.push({ role: 'assistant', content: g });
     txtEl.disabled = false;
@@ -360,7 +445,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 async function send() {
   const text = txtEl.value.trim();
-  if (!text || loading || !mode) return;
+  if (!text || loading || !currentMode) return;
   txtEl.value = '';
   txtEl.style.height = 'auto';
   loading = true;
@@ -371,10 +456,17 @@ async function send() {
   showTyping();
 
   try {
+    const systemPrompt = MODES[currentMode].system(userProfile);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: history, system: MODES[mode].system })
+      body: JSON.stringify({
+        messages: history,
+        system: systemPrompt,
+        userId,
+        mode: currentMode,
+        saveMemory: true
+      })
     });
     const data = await res.json();
     hideTyping();
@@ -399,6 +491,8 @@ txtEl.addEventListener('input', () => {
   txtEl.style.height = 'auto';
   txtEl.style.height = Math.min(txtEl.scrollHeight, 100) + 'px';
 });
+
+init();
 </script>
 </body>
 </html>
