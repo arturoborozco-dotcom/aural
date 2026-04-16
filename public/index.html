@@ -8,8 +8,6 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; }
 #app { width: 100%; max-width: 480px; height: 90vh; max-height: 720px; background: #fff; border-radius: 20px; border: 1px solid #e8e6e0; display: flex; flex-direction: column; overflow: hidden; }
-
-/* ONBOARDING */
 #onboarding { flex: 1; display: flex; flex-direction: column; padding: 32px 24px 24px; }
 .ob-progress { display: flex; gap: 6px; margin-bottom: 32px; }
 .ob-dot { flex: 1; height: 3px; border-radius: 2px; background: #e8e6e0; transition: background 0.3s; }
@@ -18,19 +16,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ob-icon { font-size: 32px; margin-bottom: 12px; }
 .ob-title { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 8px; line-height: 1.3; }
 .ob-sub { font-size: 14px; color: #888; margin-bottom: 28px; line-height: 1.5; }
-.ob-options { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.ob-options { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; }
 .ob-opt { padding: 14px 16px; border: 1.5px solid #e8e6e0; border-radius: 14px; font-size: 14px; color: #1a1a1a; background: #fff; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; line-height: 1.4; }
 .ob-opt:hover { border-color: #1D9E75; background: #f0faf5; }
 .ob-opt.selected { border-color: #1D9E75; background: #e1f5ee; color: #085041; }
-.ob-opt.multi { position: relative; }
 .ob-input { width: 100%; padding: 14px 16px; border: 1.5px solid #e8e6e0; border-radius: 14px; font-size: 14px; font-family: inherit; outline: none; color: #1a1a1a; resize: none; }
 .ob-input:focus { border-color: #1D9E75; }
-.ob-next { margin-top: 20px; padding: 14px; background: #1D9E75; color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s; }
+.ob-next { margin-top: 20px; padding: 14px; background: #1D9E75; color: white; border: none; border-radius: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
 .ob-next:hover { background: #0F6E56; }
 .ob-next:disabled { background: #d0cdc8; cursor: default; }
-.ob-skip { margin-top: 10px; padding: 10px; background: none; border: none; color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer; }
-
-/* CHAT */
+.ob-skip { margin-top: 10px; padding: 10px; background: none; border: none; color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer; flex-shrink: 0; }
 #chat { flex: 1; display: none; flex-direction: column; }
 #header { padding: 14px 18px 0; border-bottom: 1px solid #f0ede8; }
 #header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -49,6 +44,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.65; }
 .msg.user .bubble { background: #f0ede8; color: #1a1a1a; border-bottom-right-radius: 4px; }
 .msg.ai .bubble { background: #e1f5ee; color: #085041; border-bottom-left-radius: 4px; }
+.date-sep { align-self: center; font-size: 11px; color: #bbb; padding: 4px 10px; background: #f5f4f0; border-radius: 10px; }
 .typing { align-self: flex-start; background: #e1f5ee; border-radius: 16px; border-bottom-left-radius: 4px; padding: 12px 14px; display: flex; gap: 4px; align-items: center; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: blink 1.3s infinite ease-in-out; }
 .dot:nth-child(2) { animation-delay: 0.18s; }
@@ -62,6 +58,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #send:hover { background: #0F6E56; }
 #send:disabled { background: #d0cdc8; cursor: default; }
 #empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 13px; text-align: center; padding: 20px; line-height: 1.7; }
+.loading-history { align-self: center; font-size: 12px; color: #bbb; padding: 8px; }
 </style>
 </head>
 <body>
@@ -104,134 +101,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <script>
 const STEPS = [
-  {
-    icon: '👋',
-    title: '¿Cómo te llamas?',
-    sub: 'Para que tu compañero pueda llamarte por tu nombre.',
-    type: 'text',
-    placeholder: 'Tu nombre...',
-    key: 'nombre'
-  },
-  {
-    icon: '🧭',
-    title: '¿En qué momento de vida estás?',
-    sub: 'Elige lo que más resuena ahora mismo.',
-    type: 'single',
-    key: 'momento',
-    opts: [
-      { label: 'Construyendo algo nuevo', val: 'construccion' },
-      { label: 'En transición o cambio', val: 'transicion' },
-      { label: 'Buscando más claridad', val: 'claridad' },
-      { label: 'Quiero crecer pero algo me frena', val: 'bloqueado' }
-    ]
-  },
-  {
-    icon: '🎯',
-    title: '¿Qué quieres trabajar más?',
-    sub: 'Puedes elegir más de uno.',
-    type: 'multi',
-    key: 'areas',
-    opts: [
-      { label: 'Bienestar emocional', val: 'emocional' },
-      { label: 'Hábitos y disciplina', val: 'habitos' },
-      { label: 'Foco y productividad', val: 'foco' },
-      { label: 'Finanzas personales', val: 'finanzas' },
-      { label: 'Espiritualidad', val: 'espiritualidad' },
-      { label: 'Mis proyectos y negocio', val: 'negocio' }
-    ]
-  },
-  {
-    icon: '🧠',
-    title: '¿Cómo procesas mejor las cosas?',
-    sub: 'Así tu compañero se adapta a ti.',
-    type: 'single',
-    key: 'estilo',
-    opts: [
-      { label: 'Necesito hablar para pensar', val: 'verbal' },
-      { label: 'Prefiero analizar antes de hablar', val: 'analitico' },
-      { label: 'Me guía la intuición y lo que siento', val: 'intuitivo' },
-      { label: 'Necesito acción concreta', val: 'practico' }
-    ]
-  },
-  {
-    icon: '⚡',
-    title: '¿Qué te frena más seguido?',
-    sub: 'Sé honesto — nadie más lo verá.',
-    type: 'single',
-    key: 'freno',
-    opts: [
-      { label: 'La ansiedad o el estrés', val: 'ansiedad' },
-      { label: 'No saber por dónde empezar', val: 'paralisis' },
-      { label: 'La falta de constancia', val: 'constancia' },
-      { label: 'El miedo a equivocarme', val: 'miedo' }
-    ]
-  },
-  {
-    icon: '🌱',
-    title: '¿Cómo prefieres que te acompañe?',
-    sub: 'Define el tono de la relación.',
-    type: 'single',
-    key: 'tono',
-    opts: [
-      { label: 'Con calidez y escucha profunda', val: 'calido' },
-      { label: 'Directo y al grano', val: 'directo' },
-      { label: 'Que me rete y me empuje', val: 'retador' },
-      { label: 'Flexible según el momento', val: 'flexible' }
-    ]
-  }
+  { icon: '👋', title: '¿Cómo te llamas?', sub: 'Para que tu compañero pueda llamarte por tu nombre.', type: 'text', placeholder: 'Tu nombre...', key: 'nombre' },
+  { icon: '🧭', title: '¿En qué momento de vida estás?', sub: 'Elige lo que más resuena ahora mismo.', type: 'single', key: 'momento', opts: [{ label: 'Construyendo algo nuevo', val: 'construccion' }, { label: 'En transición o cambio', val: 'transicion' }, { label: 'Buscando más claridad', val: 'claridad' }, { label: 'Quiero crecer pero algo me frena', val: 'bloqueado' }] },
+  { icon: '🎯', title: '¿Qué quieres trabajar más?', sub: 'Puedes elegir más de uno.', type: 'multi', key: 'areas', opts: [{ label: 'Bienestar emocional', val: 'emocional' }, { label: 'Hábitos y disciplina', val: 'habitos' }, { label: 'Foco y productividad', val: 'foco' }, { label: 'Finanzas personales', val: 'finanzas' }, { label: 'Espiritualidad', val: 'espiritualidad' }, { label: 'Mis proyectos y negocio', val: 'negocio' }] },
+  { icon: '🧠', title: '¿Cómo procesas mejor las cosas?', sub: 'Así tu compañero se adapta a ti.', type: 'single', key: 'estilo', opts: [{ label: 'Necesito hablar para pensar', val: 'verbal' }, { label: 'Prefiero analizar antes de hablar', val: 'analitico' }, { label: 'Me guía la intuición y lo que siento', val: 'intuitivo' }, { label: 'Necesito acción concreta', val: 'practico' }] },
+  { icon: '⚡', title: '¿Qué te frena más seguido?', sub: 'Sé honesto — nadie más lo verá.', type: 'single', key: 'freno', opts: [{ label: 'La ansiedad o el estrés', val: 'ansiedad' }, { label: 'No saber por dónde empezar', val: 'paralisis' }, { label: 'La falta de constancia', val: 'constancia' }, { label: 'El miedo a equivocarme', val: 'miedo' }] },
+  { icon: '🌱', title: '¿Cómo prefieres que te acompañe?', sub: 'Define el tono de la relación.', type: 'single', key: 'tono', opts: [{ label: 'Con calidez y escucha profunda', val: 'calido' }, { label: 'Directo y al grano', val: 'directo' }, { label: 'Que me rete y me empuje', val: 'retador' }, { label: 'Flexible según el momento', val: 'flexible' }] }
 ];
 
 const MODES = {
-  manana: {
-    label: 'Inicio del día',
-    greeting: (n) => `Buenos días, ${n}. ¿Cómo amaneciste hoy — de verdad?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}. Es de mañana.
-Perfil: ${JSON.stringify(p)}
-Momento vital: ${p.momento}. Lo que más quiere trabajar: ${(p.areas||[]).join(', ')}. Estilo: ${p.estilo}. Principal freno: ${p.freno}. Tono preferido: ${p.tono}.
-${p.insights ? `Insights recientes: ${JSON.stringify(p.insights)}` : ''}
-Ayúdale a arrancar el día con claridad. Pregunta cómo amaneció. Ayúdale a identificar UNA o dos intenciones. Sé breve, cálido, sin sermones. Habla de tú.`
-  },
-  estres: {
-    label: 'Momento difícil',
-    greeting: (n) => `Aquí estoy, ${n}. ¿Qué está pasando?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}. Está en un momento de estrés.
-Perfil: ${JSON.stringify(p)}. Su principal freno es ${p.freno}. Tono: ${p.tono}.
-${p.insights ? `Insights: ${JSON.stringify(p.insights)}` : ''}
-Primero escucha. No resuelvas de inmediato. Valida sin minimizar. Una pregunta que abra perspectiva si es necesario. Habla de tú. Frases cortas.`
-  },
-  habitos: {
-    label: 'Hábitos y rutinas',
-    greeting: (n) => `Cuéntame cómo van las cosas, ${n}. ¿Qué hábito quieres revisar hoy?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}. Revisan hábitos juntos.
-Áreas de interés: ${(p.areas||[]).join(', ')}. Freno: ${p.freno}. Estilo: ${p.estilo}.
-${p.insights ? `Patrones detectados: ${JSON.stringify(p.insights)}` : ''}
-Pregunta sin juzgar. Explora patrones con curiosidad. Sugiere ajustes pequeños si los pide. Honesto pero amable. Habla de tú.`
-  },
-  foco: {
-    label: 'Foco y trabajo',
-    greeting: (n) => `Listo, ${n}. ¿En qué estás atorado o qué necesitas clarificar?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}. Modo trabajo.
-Proyectos/áreas: ${(p.areas||[]).join(', ')}. Estilo: ${p.estilo}. Tono: ${p.tono}.
-${p.insights ? `Fortalezas: ${JSON.stringify(p.insights?.fortalezas)}` : ''}
-Ayúdale a clarificar prioridades. Piensa con él. Sé directo. Ve al grano. Habla de tú.`
-  },
-  cierre: {
-    label: 'Cierre del día',
-    greeting: (n) => `El día está cerrando, ${n}. ¿Cómo te fue?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}. Es fin del día.
-Perfil: ${JSON.stringify(p)}.
-${p.insights ? `Áreas de trabajo: ${JSON.stringify(p.insights?.areas_de_trabajo)}` : ''}
-Ayúdale a reconocer algo bueno. A soltar lo que no se resolvió. No generes más tareas. Termina con presencia. Suave. Habla de tú.`
-  },
-  libre: {
-    label: 'Conversación libre',
-    greeting: (n) => `Cuéntame, ${n}. ¿Por dónde empezamos hoy?`,
-    system: (p) => `Eres el compañero personal de ${p.nombre}.
-Perfil completo: ${JSON.stringify(p)}.
-${p.insights ? `Lo que sabes de él: ${JSON.stringify(p.insights)}` : ''}
-Sé coach, caja de resonancia, compañero o experto según lo que necesite. Habla de tú, breve cuando el momento lo pide, profundo cuando él lo busca.`
-  }
+  manana: { label: 'Inicio del día', greeting: (n) => `Buenos días, ${n}. ¿Cómo amaneciste hoy — de verdad?`, system: (p) => buildSystem(p, 'mañana') },
+  estres: { label: 'Momento difícil', greeting: (n) => `Aquí estoy, ${n}. ¿Qué está pasando?`, system: (p) => buildSystem(p, 'estres') },
+  habitos: { label: 'Hábitos y rutinas', greeting: (n) => `Cuéntame cómo van las cosas, ${n}. ¿Qué hábito quieres revisar hoy?`, system: (p) => buildSystem(p, 'habitos') },
+  foco: { label: 'Foco y trabajo', greeting: (n) => `Listo, ${n}. ¿En qué estás atorado o qué necesitas clarificar?`, system: (p) => buildSystem(p, 'foco') },
+  cierre: { label: 'Cierre del día', greeting: (n) => `El día está cerrando, ${n}. ¿Cómo te fue?`, system: (p) => buildSystem(p, 'cierre') },
+  libre: { label: 'Conversación libre', greeting: (n) => `Cuéntame, ${n}. ¿Por dónde empezamos hoy?`, system: (p) => buildSystem(p, 'libre') }
 };
+
+function buildSystem(p, mode) {
+  const nombre = p.nombre || 'amigo';
+  const insights = p.insights ? `\nInsights aprendidos: patrones=${p.insights.patrones}, fortalezas=${p.insights.fortalezas}, áreas de trabajo=${p.insights.areas_de_trabajo}, estilo=${p.insights.estilo_comunicacion}` : '';
+  return `Eres el compañero personal de ${nombre}. Modo: ${mode}.
+Perfil: momento vital=${p.momento}, áreas de interés=${(p.areas||[]).join(', ')}, estilo=${p.estilo}, principal freno=${p.freno}, tono preferido=${p.tono}.${insights}
+Habla de tú. Sé breve y presente. Adapta tu tono al modo. No repitas el saludo si ya hay historial — continúa la conversación naturalmente.`;
+}
 
 let userId = localStorage.getItem('companion_uid');
 if (!userId) {
@@ -265,9 +158,7 @@ async function init() {
     } else {
       showOnboarding();
     }
-  } catch(e) {
-    showOnboarding();
-  }
+  } catch(e) { showOnboarding(); }
 }
 
 function showOnboarding() {
@@ -279,118 +170,83 @@ function showOnboarding() {
 function showChat() {
   obEl.style.display = 'none';
   chatEl.style.display = 'flex';
+  document.getElementById('hname').textContent = userProfile.nombre || 'Tu compañero';
 }
 
 function renderStep() {
   const step = STEPS[currentStep];
-  const total = STEPS.length;
-  multiSelected = [];
+  multiSelected = Array.isArray(answers[step.key]) ? [...answers[step.key]] : [];
 
-  let dotsHTML = STEPS.map((_, i) => {
-    let cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
-    return `<div class="ob-dot ${cls}"></div>`;
-  }).join('');
+  const dots = STEPS.map((_, i) => `<div class="ob-dot ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}"></div>`).join('');
 
-  let contentHTML = '';
+  let content = '';
   if (step.type === 'text') {
-    contentHTML = `<textarea class="ob-input" id="ob-text" placeholder="${step.placeholder}" rows="2">${answers[step.key] || ''}</textarea>`;
+    content = `<textarea class="ob-input" id="ob-text" placeholder="${step.placeholder}" rows="2">${answers[step.key] || ''}</textarea>`;
   } else if (step.type === 'single') {
-    contentHTML = step.opts.map(o => {
-      const sel = answers[step.key] === o.val ? 'selected' : '';
-      return `<button class="ob-opt ${sel}" data-val="${o.val}">${o.label}</button>`;
-    }).join('');
-  } else if (step.type === 'multi') {
-    const prev = answers[step.key] || [];
-    contentHTML = step.opts.map(o => {
-      const sel = prev.includes(o.val) ? 'selected' : '';
-      return `<button class="ob-opt multi ${sel}" data-val="${o.val}">${o.label}</button>`;
-    }).join('');
-    multiSelected = [...prev];
+    content = step.opts.map(o => `<button class="ob-opt${answers[step.key] === o.val ? ' selected' : ''}" data-val="${o.val}">${o.label}</button>`).join('');
+  } else {
+    content = step.opts.map(o => `<button class="ob-opt multi${(answers[step.key]||[]).includes(o.val) ? ' selected' : ''}" data-val="${o.val}">${o.label}</button>`).join('');
   }
 
   obEl.innerHTML = `
-    <div class="ob-progress">${dotsHTML}</div>
+    <div class="ob-progress">${dots}</div>
     <div class="ob-icon">${step.icon}</div>
     <div class="ob-title">${step.title}</div>
     <div class="ob-sub">${step.sub}</div>
-    <div class="ob-options">${contentHTML}</div>
-    <button class="ob-next" id="ob-next" ${canProceed(step) ? '' : 'disabled'}>
-      ${currentStep === total - 1 ? 'Empezar' : 'Continuar'}
-    </button>
+    <div class="ob-options">${content}</div>
+    <button class="ob-next" id="ob-next" ${canProceed(step) ? '' : 'disabled'}>${currentStep === STEPS.length - 1 ? 'Empezar' : 'Continuar'}</button>
     ${currentStep > 0 ? '<button class="ob-skip" id="ob-back">← Atrás</button>' : ''}
   `;
 
   if (step.type === 'single') {
-    obEl.querySelectorAll('.ob-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        obEl.querySelectorAll('.ob-opt').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        answers[step.key] = btn.dataset.val;
-        document.getElementById('ob-next').disabled = false;
-      });
-    });
+    obEl.querySelectorAll('.ob-opt').forEach(btn => btn.addEventListener('click', () => {
+      obEl.querySelectorAll('.ob-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers[step.key] = btn.dataset.val;
+      document.getElementById('ob-next').disabled = false;
+    }));
   } else if (step.type === 'multi') {
-    obEl.querySelectorAll('.ob-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('selected');
-        const v = btn.dataset.val;
-        if (multiSelected.includes(v)) {
-          multiSelected = multiSelected.filter(x => x !== v);
-        } else {
-          multiSelected.push(v);
-        }
-        answers[step.key] = [...multiSelected];
-        document.getElementById('ob-next').disabled = multiSelected.length === 0;
-      });
-    });
-  } else if (step.type === 'text') {
+    obEl.querySelectorAll('.ob-opt').forEach(btn => btn.addEventListener('click', () => {
+      btn.classList.toggle('selected');
+      const v = btn.dataset.val;
+      multiSelected = multiSelected.includes(v) ? multiSelected.filter(x => x !== v) : [...multiSelected, v];
+      answers[step.key] = [...multiSelected];
+      document.getElementById('ob-next').disabled = multiSelected.length === 0;
+    }));
+  } else {
     const ta = document.getElementById('ob-text');
-    ta.addEventListener('input', () => {
-      document.getElementById('ob-next').disabled = ta.value.trim().length < 2;
-    });
+    ta.addEventListener('input', () => { document.getElementById('ob-next').disabled = ta.value.trim().length < 2; });
   }
 
   document.getElementById('ob-next').addEventListener('click', nextStep);
-  const backBtn = document.getElementById('ob-back');
-  if (backBtn) backBtn.addEventListener('click', () => { currentStep--; renderStep(); });
+  document.getElementById('ob-back')?.addEventListener('click', () => { currentStep--; renderStep(); });
 }
 
 function canProceed(step) {
   if (step.type === 'text') return (answers[step.key] || '').length >= 2;
   if (step.type === 'single') return !!answers[step.key];
-  if (step.type === 'multi') return (answers[step.key] || []).length > 0;
-  return false;
+  return (answers[step.key] || []).length > 0;
 }
 
 async function nextStep() {
   const step = STEPS[currentStep];
-  if (step.type === 'text') {
-    answers[step.key] = document.getElementById('ob-text').value.trim();
-  }
+  if (step.type === 'text') answers[step.key] = document.getElementById('ob-text').value.trim();
   if (currentStep === STEPS.length - 1) {
-    await saveProfile();
+    await fetch(`/api/user/${userId}/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profile: answers }) });
+    userProfile = answers;
+    showChat();
   } else {
     currentStep++;
     renderStep();
   }
 }
 
-async function saveProfile() {
-  try {
-    await fetch(`/api/user/${userId}/profile`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile: answers })
-    });
-    userProfile = answers;
-    showChat();
-  } catch(e) {
-    userProfile = answers;
-    showChat();
-  }
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-MX', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-function addMsg(role, text) {
+function addMsg(role, text, timestamp) {
   const d = document.createElement('div');
   d.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
   const b = document.createElement('div');
@@ -408,40 +264,75 @@ function showTyping() {
   msgsEl.appendChild(d);
   msgsEl.scrollTop = msgsEl.scrollHeight;
 }
-function hideTyping() {
-  const t = document.getElementById('typing');
-  if (t) t.remove();
-}
+function hideTyping() { document.getElementById('typing')?.remove(); }
 
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', async () => {
-    const m = tab.dataset.mode;
-    if (m === currentMode) return;
-    currentMode = m;
-    history = [];
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    hmode.textContent = MODES[m].label;
-    msgsEl.innerHTML = '';
-    emptyEl.style.display = 'none';
-    msgsEl.style.display = 'flex';
+async function loadMode(m) {
+  currentMode = m;
+  history = [];
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-mode="${m}"]`).classList.add('active');
+  hmode.textContent = MODES[m].label;
+  msgsEl.innerHTML = '';
+  emptyEl.style.display = 'none';
+  msgsEl.style.display = 'flex';
+  txtEl.disabled = false;
+  sendEl.disabled = false;
 
-    // Refresh profile with latest insights
-    try {
-      const res = await fetch(`/api/user/${userId}`);
-      const user = await res.json();
-      userProfile = { ...answers, ...(user.profile || {}) };
-    } catch(e) {}
+  // Refresh profile
+  try {
+    const res = await fetch(`/api/user/${userId}`);
+    const user = await res.json();
+    userProfile = { ...userProfile, ...(user.profile || {}) };
+  } catch(e) {}
 
+  // Load history from DB
+  const loadEl = document.createElement('div');
+  loadEl.className = 'loading-history';
+  loadEl.textContent = 'Cargando historial...';
+  msgsEl.appendChild(loadEl);
+
+  try {
+    const res = await fetch(`/api/messages/${userId}/${m}`);
+    const msgs = await res.json();
+    loadEl.remove();
+
+    if (msgs.length > 0) {
+      // Show history with date separators
+      let lastDate = '';
+      msgs.forEach(msg => {
+        const d = formatDate(msg.created_at);
+        if (d !== lastDate) {
+          const sep = document.createElement('div');
+          sep.className = 'date-sep';
+          sep.textContent = d;
+          msgsEl.appendChild(sep);
+          lastDate = d;
+        }
+        addMsg(msg.role, msg.content);
+        history.push({ role: msg.role, content: msg.content });
+      });
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    } else {
+      // First time in this mode — send greeting
+      const nombre = userProfile.nombre || 'amigo';
+      const g = MODES[m].greeting(nombre);
+      addMsg('ai', g);
+      history.push({ role: 'assistant', content: g });
+      // Save greeting
+      await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, mode: m, role: 'assistant', content: g }) });
+    }
+  } catch(e) {
+    loadEl.remove();
     const nombre = userProfile.nombre || 'amigo';
     const g = MODES[m].greeting(nombre);
     addMsg('ai', g);
     history.push({ role: 'assistant', content: g });
-    txtEl.disabled = false;
-    sendEl.disabled = false;
-    txtEl.focus();
-  });
-});
+  }
+
+  txtEl.focus();
+}
+
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => loadMode(tab.dataset.mode)));
 
 async function send() {
   const text = txtEl.value.trim();
@@ -453,20 +344,17 @@ async function send() {
 
   addMsg('user', text);
   history.push({ role: 'user', content: text });
+
+  // Save user message
+  await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId, mode: currentMode, role: 'user', content: text }) });
+
   showTyping();
 
   try {
-    const systemPrompt = MODES[currentMode].system(userProfile);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: history,
-        system: systemPrompt,
-        userId,
-        mode: currentMode,
-        saveMemory: true
-      })
+      body: JSON.stringify({ messages: history, system: MODES[currentMode].system(userProfile), userId, mode: currentMode })
     });
     const data = await res.json();
     hideTyping();
@@ -484,13 +372,8 @@ async function send() {
 }
 
 sendEl.addEventListener('click', send);
-txtEl.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-});
-txtEl.addEventListener('input', () => {
-  txtEl.style.height = 'auto';
-  txtEl.style.height = Math.min(txtEl.scrollHeight, 100) + 'px';
-});
+txtEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+txtEl.addEventListener('input', () => { txtEl.style.height = 'auto'; txtEl.style.height = Math.min(txtEl.scrollHeight, 100) + 'px'; });
 
 init();
 </script>
