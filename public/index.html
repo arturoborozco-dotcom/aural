@@ -316,10 +316,7 @@ async function startNewChat(mode){
   currentSessionId = sessionId;
   currentMode = mode;
   history = [];
-
-  // Create session
-  const nombre = capitalize(userProfile.nombre||'amigo');
-  await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,userId,mode,title:'Chat nuevo'})});
+  let sessionSaved = false;
 
   // UI
   document.querySelectorAll('.sb-mode-btn').forEach(b=>b.classList.toggle('active-mode',b.dataset.mode===mode));
@@ -328,20 +325,22 @@ async function startNewChat(mode){
   badge.textContent=MODE_LABELS[mode];
   badge.style.background=MODE_COLORS[mode]+'22';
   badge.style.color=MODE_COLORS[mode];
-  document.getElementById('chat-title').textContent='Chat nuevo';
+  document.getElementById('chat-title').textContent=MODE_LABELS[mode];
   emptyEl.style.display='none';
   msgsEl.innerHTML='';
   msgsEl.style.display='flex';
   txtEl.disabled=false;
   sendEl.disabled=false;
 
-  // Greeting
+  // Greeting (only in UI, not saved yet)
+  const nombre = capitalize(userProfile.nombre||'amigo');
   const g = MODE_GREETINGS[mode](nombre);
   addMsg('ai',g);
   history.push({role:'assistant',content:g});
-  await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,userId,role:'assistant',content:g})});
 
-  loadSidebar();
+  // Save session + greeting only when user sends first message
+  window._pendingSession = { sessionId, mode, greeting: g };
+
   txtEl.focus();
 }
 
@@ -419,14 +418,19 @@ async function send(){
   loading=true;sendEl.disabled=true;
   addMsg('user',text);
   history.push({role:'user',content:text});
-  await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:currentSessionId,userId,role:'user',content:text})});
-  // Update title after first user message
-  if(history.filter(m=>m.role==='user').length===1){
-    const title=text.slice(0,50);
+
+  // Save session + greeting on first user message
+  if(window._pendingSession && window._pendingSession.sessionId === currentSessionId){
+    const {sessionId, mode, greeting} = window._pendingSession;
+    const title = text.slice(0,50);
+    await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,userId,mode,title})});
+    await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,userId,role:'assistant',content:greeting})});
     document.getElementById('chat-title').textContent=title;
-    await fetch(`/api/sessions/${currentSessionId}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});
+    window._pendingSession = null;
     loadSidebar();
   }
+
+  await fetch('/api/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:currentSessionId,userId,role:'user',content:text})});
   showTyping();
   try{
     const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:history,system:buildSystem(userProfile,currentMode),userId,mode:currentMode,sessionId:currentSessionId})});
